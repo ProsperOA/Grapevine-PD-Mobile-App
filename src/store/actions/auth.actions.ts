@@ -2,6 +2,7 @@ import * as firebase from 'firebase';
 import { ActionCreator, Dispatch } from 'redux';
 
 import * as types from './types';
+import AuthCredentials from '../../models/auth-credentials.model';
 
 export interface ILoginSuccess {
   type: types.LOGIN_SUCCESS;
@@ -29,8 +30,10 @@ const loginFailed: ActionCreator<ILoginFailed> =
     type: types.LOGIN_FAILED
 });
 
-export const login = (email: string, password: string): any =>
+export const login = (credentials: AuthCredentials): any =>
   (dispatch: Dispatch<ILoginSuccess | ILoginFailed>): void => {
+    const { email, password } = credentials;
+
     firebase.auth().signInWithEmailAndPassword(email, password)
       .then((res: firebase.auth.UserCredential) => {
         dispatch(loginSuccess(res.user));
