@@ -2,6 +2,9 @@ export {
   AuthAction,
   ILoginSuccess,
   ILoginFailed,
+  ISignUpSuccess,
+  ISignUpFailed,
 
-  login
+  login,
+  signUp
 } from './auth.actions';

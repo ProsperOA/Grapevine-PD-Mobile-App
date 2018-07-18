@@ -1,8 +1,8 @@
 import * as React from 'react';
+import * as _ from 'lodash';
 import * as t from 'tcomb-form-native';
 import * as Animatable from 'react-native-animatable';
-import { Text } from 'react-native';
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 import { connect } from 'react-redux';
 import { Dispatch } from 'redux';
 import { Button } from 'react-native-elements';
@@ -15,6 +15,9 @@ interface AuthProps {
   login: (credentials: AuthCredentials) => (
     Dispatch<actions.ILoginSuccess | actions.ILoginFailed>
   );
+  signUp: (credentials: AuthCredentials) => (
+    Dispatch<actions.ISignUpSuccess | actions.ISignUpFailed>
+  );
 }
 
 interface AuthStateLocal {
@@ -22,6 +25,7 @@ interface AuthStateLocal {
   password: string;
   signingUp: boolean;
   formValue: any;
+  signUpForm: any;
 }
 
 const Form = t.form.Form;
@@ -31,7 +35,8 @@ class AuthScreen extends React.Component<AuthProps, AuthStateLocal> {
     email: '',
     password: '',
     signingUp: false,
-    formValue: null
+    formValue: null,
+    signUpForm: _.cloneDeep(SignUpForm)
   };
   public authFormsRef: any;
 
@@ -43,7 +48,18 @@ class AuthScreen extends React.Component<AuthProps, AuthStateLocal> {
   };
 
   public onSignUp = (): void => {
-    // TODO: add sign up logic
+    const credentials: AuthCredentials = this.refs.signUpForm.getValue();
+    if (!credentials) return;
+
+    if (credentials.password !== credentials.confirmPassword) {
+      const signUpForm = _.cloneDeep(this.state.signUpForm);
+      signUpForm.options.fields.confirmPassword.hasError = true;
+
+      this.setState({ signUpForm });
+      return;
+    }
+
+    this.props.signUp(credentials);
   };
 
   public onForgotPassword = (): void => {
@@ -133,7 +149,8 @@ class AuthScreen extends React.Component<AuthProps, AuthStateLocal> {
 }
 
 const mapDispatchToProps = (dispatch: Dispatch<actions.AuthAction>) => ({
-  login: (credentials: AuthCredentials) => dispatch(actions.login(credentials))
+  login:  (credentials: AuthCredentials) => dispatch(actions.login(credentials)),
+  signUp: (credentials: AuthCredentials) => dispatch(actions.signUp(credentials))
 });
 
 export default connect(null, mapDispatchToProps)(AuthScreen)

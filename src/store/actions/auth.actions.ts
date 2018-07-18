@@ -15,9 +15,22 @@ export interface ILoginFailed {
   type: types.LOGIN_FAILED;
 }
 
+export interface ISignUpSuccess {
+  type: types.SIGNUP_SUCCESS;
+  payload: {
+    user: any;
+  };
+}
+
+export interface ISignUpFailed {
+  type: types.SIGNUP_FAILED;
+}
+
 export type AuthAction =
   | ILoginSuccess
-  | ILoginFailed;
+  | ILoginFailed
+  | ISignUpSuccess
+  | ISignUpFailed;
 
 const loginSuccess: ActionCreator<ILoginSuccess> =
   (user: any): ILoginSuccess => ({
@@ -30,6 +43,18 @@ const loginFailed: ActionCreator<ILoginFailed> =
     type: types.LOGIN_FAILED
 });
 
+const signUpSuccess: ActionCreator<ISignUpSuccess> =
+  (user: any): ISignUpSuccess => ({
+    type:    types.SIGNUP_SUCCESS,
+    payload: { user }
+});
+
+const signUpFailed: ActionCreator<ISignUpFailed> =
+  (): ISignUpFailed => ({
+    type: types.SIGNUP_FAILED
+});
+
+
 export const login = (credentials: AuthCredentials): any =>
   (dispatch: Dispatch<ILoginSuccess | ILoginFailed>): void => {
     const { email, password } = credentials;
@@ -40,6 +65,20 @@ export const login = (credentials: AuthCredentials): any =>
       })
       .catch(err => {
         dispatch(loginFailed());
+        console.error(err);
+      });
+};
+
+export const signUp = (credentials: AuthCredentials): any =>
+  (dispatch: Dispatch<ISignUpSuccess | ISignUpFailed>): void => {
+    const { email, password } = credentials;
+
+    firebase.auth().createUserWithEmailAndPassword(email, password)
+      .then((res: firebase.auth.UserCredential) => {
+        dispatch(signUpSuccess(res.user));
+      })
+      .catch(err => {
+        dispatch(signUpFailed());
         console.error(err);
       });
 };
