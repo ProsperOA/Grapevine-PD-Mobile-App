@@ -7,6 +7,10 @@ import { Text, View } from 'react-native';
 import { connect } from 'react-redux';
 import { Dispatch } from 'redux';
 import { Button } from 'react-native-elements';
+import {
+  NavigationScreenProps,
+  NavigationActions,
+  StackActions } from 'react-navigation';
 
 import * as actions from '../store/actions';
 import AuthCredentials from '../models/auth-credentials.model';
@@ -14,7 +18,7 @@ import { AuthState } from '../store/reducers/auth.reducer';
 import { AppState } from '../store/reducers';
 import { LoginForm, SignUpForm } from '../models/forms/auth.form';
 
-interface AuthProps extends AuthState {
+interface AuthProps extends AuthState, NavigationScreenProps {
   login: (credentials: AuthCredentials) => (
     Dispatch<actions.ILoginSuccess | actions.ILoginFailed>
   );
@@ -44,9 +48,18 @@ class AuthScreen extends React.Component<AuthProps, AuthStateLocal> {
   public authFormsRef: any;
   public dropdownAlertRef: any;
 
+  public componentDidUpdate(): void {
+    if (this.props.isAuth) {
+      const resetAction = StackActions.reset({
+        index: 0,
+        actions: [NavigationActions.navigate({ routeName: 'HomeScreen' })]
+      });
+      this.props.navigation.dispatch(resetAction);
+    }
+  }
+
   public componentWillReceiveProps(nextProps: AuthProps): void {
     const { error } = nextProps;
-    console.log(error)
     if (error && error !== this.props.error) {
       this.dropdownAlertRef.alertWithType('error', 'Error', error);
     }
