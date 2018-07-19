@@ -8,17 +8,21 @@ import { connect } from 'react-redux';
 import { Dispatch } from 'redux';
 import { Button } from 'react-native-elements';
 import {
-  NavigationScreenProps,
   NavigationActions,
+  NavigationScreenProps,
   StackActions } from 'react-navigation';
 
 import * as actions from '../store/actions';
 import AuthCredentials from '../models/auth-credentials.model';
+import authTokenService from '../shared/services/auth-token.service';
 import { AuthState } from '../store/reducers/auth.reducer';
 import { AppState } from '../store/reducers';
 import { LoginForm, SignUpForm } from '../models/forms/auth.form';
 
 interface AuthProps extends AuthState, NavigationScreenProps {
+  authUser: (token: string) => (
+    Dispatch<actions.IAuthUserSuccess | actions.IAuthUserFailed>
+  );
   login: (credentials: AuthCredentials) => (
     Dispatch<actions.ILoginSuccess | actions.ILoginFailed>
   );
@@ -47,6 +51,12 @@ class AuthScreen extends React.Component<AuthProps, AuthStateLocal> {
   };
   public authFormsRef: any;
   public dropdownAlertRef: any;
+
+  public componentWillMount(): void {
+    authTokenService.retrieve(token => {
+      if (token) this.props.authUser(token)
+    });
+  }
 
   public componentDidUpdate(): void {
     if (this.props.isAuth) {
@@ -179,8 +189,9 @@ class AuthScreen extends React.Component<AuthProps, AuthStateLocal> {
 const mapStateToProps = ({ auth }: AppState) => ({ ...auth });
 
 const mapDispatchToProps = (dispatch: Dispatch<actions.AuthAction>) => ({
-  login:  (credentials: AuthCredentials) => dispatch(actions.login(credentials)),
-  signUp: (credentials: AuthCredentials) => dispatch(actions.signUp(credentials))
+  authUser:  (token: string)                => dispatch(actions.authUser(token)),
+  login:     (credentials: AuthCredentials) => dispatch(actions.login(credentials)),
+  signUp:    (credentials: AuthCredentials) => dispatch(actions.signUp(credentials))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(AuthScreen)
