@@ -5,6 +5,7 @@ import { Provider } from 'react-redux';
 import { createStackNavigator } from 'react-navigation';
 
 import AuthScreen from './screens/auth.screen';
+import HomeScreen from './screens/home.screen';
 import enhancers from './store/middlewares';
 import rootReducer from './store/reducers';
 
@@ -23,7 +24,8 @@ const store = createStore(rootReducer, enhancers);
 
 const RootNavigator = createStackNavigator(
   {
-    AuthScreen
+    AuthScreen,
+    HomeScreen
   },
   {
     initialRouteName: 'AuthScreen'
