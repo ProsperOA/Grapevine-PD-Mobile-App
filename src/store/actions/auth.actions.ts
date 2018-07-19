@@ -7,7 +7,7 @@ import AuthCredentials from '../../models/auth-credentials.model';
 export interface ILoginSuccess {
   type: types.LOGIN_SUCCESS;
   payload: {
-    user: any;
+    user: firebase.auth.UserCredential;
   };
 }
 
@@ -19,7 +19,7 @@ export interface ILoginFailed {
 export interface ISignUpSuccess {
   type: types.SIGNUP_SUCCESS;
   payload: {
-    user: any;
+    user: firebase.auth.UserCredential;
   };
 }
 
