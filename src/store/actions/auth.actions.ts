@@ -3,6 +3,7 @@ import { ActionCreator, Dispatch } from 'redux';
 
 import * as types from './types';
 import AuthCredentials from '../../models/auth-credentials.model';
+import authTokenService from '../../shared/services/auth-token.service';
 
 export interface ILoginSuccess {
   type: types.LOGIN_SUCCESS;
@@ -65,6 +66,10 @@ export const login = (credentials: AuthCredentials): any =>
 
     firebase.auth().signInWithEmailAndPassword(email, password)
       .then(({ user }: firebase.auth.UserCredential) => {
+        user && user.getIdToken()
+          .then(token => authTokenService.store(token))
+          .catch(err => console.warn(err))
+
         dispatch(loginSuccess(user));
       })
       .catch(({ message }: firebase.auth.Error) => {
@@ -78,6 +83,10 @@ export const signUp = (credentials: AuthCredentials): any =>
 
     firebase.auth().createUserWithEmailAndPassword(email, password)
       .then(({ user }: firebase.auth.UserCredential) => {
+        user && user.getIdToken()
+          .then(token => authTokenService.store(token))
+          .catch(err => console.warn(err))
+
         dispatch(signUpSuccess(user));
       })
       .catch(({ message }: firebase.auth.Error) => {
