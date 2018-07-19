@@ -2,16 +2,19 @@ import * as React from 'react';
 import * as _ from 'lodash';
 import * as t from 'tcomb-form-native';
 import * as Animatable from 'react-native-animatable';
+import DropdownAlert from 'react-native-dropdownalert';
 import { Text, View } from 'react-native';
 import { connect } from 'react-redux';
 import { Dispatch } from 'redux';
 import { Button } from 'react-native-elements';
 
 import * as actions from '../store/actions';
-import { LoginForm, SignUpForm } from '../models/forms/auth.form';
 import AuthCredentials from '../models/auth-credentials.model';
+import { AuthState } from '../store/reducers/auth.reducer';
+import { AppState } from '../store/reducers';
+import { LoginForm, SignUpForm } from '../models/forms/auth.form';
 
-interface AuthProps {
+interface AuthProps extends AuthState {
   login: (credentials: AuthCredentials) => (
     Dispatch<actions.ILoginSuccess | actions.ILoginFailed>
   );
@@ -39,6 +42,15 @@ class AuthScreen extends React.Component<AuthProps, AuthStateLocal> {
     signUpForm: _.cloneDeep(SignUpForm)
   };
   public authFormsRef: any;
+  public dropdownAlertRef: any;
+
+  public componentWillReceiveProps(nextProps: AuthProps): void {
+    const { error } = nextProps;
+    console.log(error)
+    if (error && error !== this.props.error) {
+      this.dropdownAlertRef.alertWithType('error', 'Error', error);
+    }
+  }
 
   public onLogin = (): void => {
     const credentials: AuthCredentials = this.refs.loginForm.getValue();
@@ -143,14 +155,19 @@ class AuthScreen extends React.Component<AuthProps, AuthStateLocal> {
             ? this.renderSignUpForm()
             : this.renderLoginForm()}
         </Animatable.View>
+        <DropdownAlert
+          ref={(ref: any) => this.dropdownAlertRef = ref}
+          closeInterval={3000} />
       </Animatable.View>
     );
   }
 }
+
+const mapStateToProps = ({ auth }: AppState) => ({ ...auth });
 
 const mapDispatchToProps = (dispatch: Dispatch<actions.AuthAction>) => ({
   login:  (credentials: AuthCredentials) => dispatch(actions.login(credentials)),
   signUp: (credentials: AuthCredentials) => dispatch(actions.signUp(credentials))
 });
 
-export default connect(null, mapDispatchToProps)(AuthScreen)
+export default connect(mapStateToProps, mapDispatchToProps)(AuthScreen)

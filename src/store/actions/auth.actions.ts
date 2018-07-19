@@ -1,4 +1,4 @@
-import * as firebase from 'firebase';
+import firebase from 'firebase';
 import { ActionCreator, Dispatch } from 'redux';
 
 import * as types from './types';
@@ -13,6 +13,7 @@ export interface ILoginSuccess {
 
 export interface ILoginFailed {
   type: types.LOGIN_FAILED;
+  payload: string;
 }
 
 export interface ISignUpSuccess {
@@ -24,6 +25,7 @@ export interface ISignUpSuccess {
 
 export interface ISignUpFailed {
   type: types.SIGNUP_FAILED;
+  payload: string;
 }
 
 export type AuthAction =
@@ -34,25 +36,27 @@ export type AuthAction =
 
 const loginSuccess: ActionCreator<ILoginSuccess> =
   (user: any): ILoginSuccess => ({
-    type:    types.LOGIN_SUCCESS,
+    type: types.LOGIN_SUCCESS,
     payload: { user }
-});
+  });
 
 const loginFailed: ActionCreator<ILoginFailed> =
-  (): ILoginFailed => ({
-    type: types.LOGIN_FAILED
-});
+  (errMsg: string): ILoginFailed => ({
+    type: types.LOGIN_FAILED,
+    payload: errMsg
+  });
 
 const signUpSuccess: ActionCreator<ISignUpSuccess> =
   (user: any): ISignUpSuccess => ({
-    type:    types.SIGNUP_SUCCESS,
+    type: types.SIGNUP_SUCCESS,
     payload: { user }
-});
+  });
 
 const signUpFailed: ActionCreator<ISignUpFailed> =
-  (): ISignUpFailed => ({
-    type: types.SIGNUP_FAILED
-});
+  (errMsg: string): ISignUpFailed => ({
+    type: types.SIGNUP_FAILED,
+    payload: errMsg
+  });
 
 
 export const login = (credentials: AuthCredentials): any =>
@@ -60,25 +64,23 @@ export const login = (credentials: AuthCredentials): any =>
     const { email, password } = credentials;
 
     firebase.auth().signInWithEmailAndPassword(email, password)
-      .then((res: firebase.auth.UserCredential) => {
-        dispatch(loginSuccess(res.user));
+      .then(({ user }: firebase.auth.UserCredential) => {
+        dispatch(loginSuccess(user));
       })
-      .catch(err => {
-        dispatch(loginFailed());
-        console.error(err);
+      .catch(({ message }: firebase.auth.Error) => {
+        dispatch(loginFailed(message));
       });
-};
+  };
 
 export const signUp = (credentials: AuthCredentials): any =>
   (dispatch: Dispatch<ISignUpSuccess | ISignUpFailed>): void => {
     const { email, password } = credentials;
 
     firebase.auth().createUserWithEmailAndPassword(email, password)
-      .then((res: firebase.auth.UserCredential) => {
-        dispatch(signUpSuccess(res.user));
+      .then(({ user }: firebase.auth.UserCredential) => {
+        dispatch(signUpSuccess(user));
       })
-      .catch(err => {
-        dispatch(signUpFailed());
-        console.error(err);
+      .catch(({ message }: firebase.auth.Error) => {
+        dispatch(signUpFailed(message));
       });
 };
