@@ -15,9 +15,11 @@ const initialState: Readonly<AuthState> = {
 
 export default (state: AuthState = initialState, action: AuthAction): AuthState => {
   switch (action.type) {
+    case types.AUTH_USER_SUCCESS:
     case types.LOGIN_SUCCESS:
     case types.SIGNUP_SUCCESS:
       return {...state, user: action.payload, isAuth: true};
+    case types.AUTH_USER_FAILED:
     case types.LOGIN_FAILED:
     case types.SIGNUP_FAILED:
       return {...state, error: action.payload, isAuth: false};
