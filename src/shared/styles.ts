@@ -1,0 +1,1 @@
+export const PRIMARY = '#2d4b0a';
