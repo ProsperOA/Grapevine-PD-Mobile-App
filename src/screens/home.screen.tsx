@@ -3,6 +3,7 @@ import { Text, TouchableOpacity, View } from 'react-native';
 import { Icon, Header } from 'react-native-elements';
 import { Permissions, PictureResponse } from 'expo';
 import { connect } from 'react-redux';
+import { NavigationActions, NavigationScreenProps } from 'react-navigation';
 
 import Camera from '../containers/camera.container';
 import { PRIMARY } from '../shared/styles';
@@ -11,18 +12,24 @@ interface HomeState {
   hasCameraPermission: boolean;
 }
 
-class HomeScreen extends React.Component<{}, HomeState> {
+class HomeScreen extends React.Component<NavigationScreenProps, HomeState> {
   public state: Readonly<HomeState> = {
     hasCameraPermission: false
   };
 
-  public onHeaderCameraButtonPress = async (): Promise<any> => {
+  public onHeaderCameraButtonPress = async (): Promise<void> => {
     const { status } = await Permissions.askAsync(Permissions.CAMERA);
     this.setState({ hasCameraPermission: status === 'granted' });
   };
 
   public onTakePicture = ({uri, base64}: PictureResponse): void => {
     this.setState({ hasCameraPermission: false });
+
+    const navigateAction = NavigationActions.navigate({
+      routeName: 'ResultsScreen',
+      params: {uri, base64},
+    });
+    this.props.navigation.dispatch(navigateAction);
   };
 
   public renderHeaderCameraButton = (): JSX.Element => (
