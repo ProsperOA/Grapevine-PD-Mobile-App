@@ -28,7 +28,8 @@ const RootNavigator = createStackNavigator(
     HomeScreen
   },
   {
-    initialRouteName: 'AuthScreen'
+    initialRouteName: 'AuthScreen',
+    headerMode: 'none'
   }
 );
 
