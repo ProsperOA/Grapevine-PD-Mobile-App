@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { Icon } from 'react-native-elements';
-import { Camera, PictureResponse } from 'expo';
+import { Camera, ImagePicker, Permissions, PictureResponse } from 'expo';
 
 interface CameraProps {
   close: any;
@@ -10,12 +10,14 @@ interface CameraProps {
 
 interface CameraState {
   type: string;
+  hasPhotoGalleryPermission: boolean;
 }
 
 export default class extends React.Component<CameraProps, CameraState> {
   public cameraRef: any;
   public state: Readonly<CameraState> = {
-    type: Camera.Constants.Type.back
+    type: Camera.Constants.Type.back,
+    hasPhotoGalleryPermission: false
   };
 
   public onTakePicture = (): void => {
@@ -23,6 +25,22 @@ export default class extends React.Component<CameraProps, CameraState> {
 
     this.cameraRef.takePictureAsync({base64: true})
       .then((options: PictureResponse) => this.props.onTakePicture(options));
+  };
+
+  public onSelectImage = async (): Promise<void> => {
+    const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
+    this.setState({ hasPhotoGalleryPermission: status === 'granted' });
+
+    if (!this.state.hasPhotoGalleryPermission) return;
+
+    ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      aspect: [4, 3],
+      base64: true
+    })
+    .then((result: any) => {
+      if (!result.cancelled) this.props.onTakePicture(result);
+    });
   };
 
   public render(): JSX.Element {
@@ -62,6 +80,13 @@ export default class extends React.Component<CameraProps, CameraState> {
               <Icon
                 name="camera"
                 iconStyle={{ color: '#fff', fontSize: 50, marginBottom: 10 }} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{ flex: 0.1, alignSelf: 'flex-end', alignItems: 'center' }}
+              onPress={this.onSelectImage}>
+              <Icon
+                name="photo-library"
+                iconStyle={{ color: '#fff', fontSize: 25, marginBottom: 10 }} />
             </TouchableOpacity>
           </View>
         </Camera>
