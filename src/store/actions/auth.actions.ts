@@ -1,14 +1,15 @@
-import firebase from 'firebase';
+import { AxiosResponse, AxiosError } from 'axios';
 import { ActionCreator, Dispatch } from 'redux';
 
 import * as types from './types';
+import axios from '../../shared/axios';
 import AuthCredentials from '../../models/auth-credentials.model';
 import authTokenService from '../../shared/services/auth-token.service';
 
 export interface IAuthUserSuccess {
   type: types.AUTH_USER_SUCCESS;
   payload: {
-    user: firebase.User
+    user: any;
   };
 }
 
@@ -18,9 +19,7 @@ export interface IAuthUserFailed {
 }
 export interface ILoginSuccess {
   type: types.LOGIN_SUCCESS;
-  payload: {
-    user: firebase.User;
-  };
+  payload: any;
 }
 
 export interface ILoginFailed {
@@ -28,28 +27,14 @@ export interface ILoginFailed {
   payload: string;
 }
 
-export interface ISignUpSuccess {
-  type: types.SIGNUP_SUCCESS;
-  payload: {
-    user: firebase.User
-  };
-}
-
-export interface ISignUpFailed {
-  type: types.SIGNUP_FAILED;
-  payload: string;
-}
-
 export type AuthAction =
   | IAuthUserSuccess
   | IAuthUserFailed
   | ILoginSuccess
-  | ILoginFailed
-  | ISignUpSuccess
-  | ISignUpFailed;
+  | ILoginFailed;
 
 const authUserSuccess: ActionCreator<IAuthUserSuccess> =
-  (user: firebase.User): IAuthUserSuccess => ({
+  (user: any): IAuthUserSuccess => ({
     type: types.AUTH_USER_SUCCESS,
     payload: { user }
 });
@@ -61,9 +46,9 @@ const authUserFailed: ActionCreator<IAuthUserFailed> =
 });
 
 const loginSuccess: ActionCreator<ILoginSuccess> =
-  (user: firebase.User): ILoginSuccess => ({
+  (user: any): ILoginSuccess => ({
     type: types.LOGIN_SUCCESS,
-    payload: { user }
+    payload: user
 });
 
 const loginFailed: ActionCreator<ILoginFailed> =
@@ -72,59 +57,31 @@ const loginFailed: ActionCreator<ILoginFailed> =
     payload: errMsg
 });
 
-const signUpSuccess: ActionCreator<ISignUpSuccess> =
-  (user: firebase.User): ISignUpSuccess => ({
-    type: types.SIGNUP_SUCCESS,
-    payload: { user }
-});
-
-const signUpFailed: ActionCreator<ISignUpFailed> =
-  (errMsg: string): ISignUpFailed => ({
-    type: types.SIGNUP_FAILED,
-    payload: errMsg
-});
-
-export const authUser = (token: string): any =>
+export const authUser = (userID: string): any =>
   (dispatch: Dispatch<IAuthUserSuccess | IAuthUserFailed>): void => {
-    firebase.auth().signInWithCustomToken(token)
-      .then(({ user }: firebase.auth.UserCredential) => {
-        dispatch(authUserSuccess(user));
-      })
-      .catch(({ message }: firebase.auth.Error) => {
-        dispatch(authUserFailed(message));
-      });
+    axios.post(`users/${userID}/auth`)
+      .then(({ data }: AxiosResponse) => dispatch(authUserSuccess(data.data)))
+      .catch(() => dispatch(authUserFailed()));
 };
 
 export const login = (credentials: AuthCredentials): any =>
   (dispatch: Dispatch<ILoginSuccess | ILoginFailed>): void => {
     const { email, password } = credentials;
+    const data = {
+      email,
+      password,
+      auth_type: 'regular'
+    };
 
-    firebase.auth().signInWithEmailAndPassword(email, password)
-      .then(({ user }: firebase.auth.UserCredential) => {
-        user && user.getIdToken()
-          .then(token => authTokenService.store(token))
-          .catch(err => console.warn(err))
+    axios.post('/login', data)
+      .then(({ data }: AxiosResponse) => {
+        const { auth_token, user } = data.data;
+        authTokenService.store(`${user.id}-${auth_token}`);
 
         dispatch(loginSuccess(user));
       })
-      .catch(({ message }: firebase.auth.Error) => {
-        dispatch(loginFailed(message));
+      .catch(({ response }: AxiosError) => {
+        const error = response ? response.data.message : 'unable to login';
+        dispatch(loginFailed(error));
       });
   };
-
-export const signUp = (credentials: AuthCredentials): any =>
-  (dispatch: Dispatch<ISignUpSuccess | ISignUpFailed>): void => {
-    const { email, password } = credentials;
-
-    firebase.auth().createUserWithEmailAndPassword(email, password)
-      .then(({ user }: firebase.auth.UserCredential) => {
-        user && user.getIdToken()
-          .then(token => authTokenService.store(token))
-          .catch(err => console.warn(err))
-
-        dispatch(signUpSuccess(user));
-      })
-      .catch(({ message }: firebase.auth.Error) => {
-        dispatch(signUpFailed(message));
-      });
-};

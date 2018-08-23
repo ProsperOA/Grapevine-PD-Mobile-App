@@ -13,6 +13,7 @@ import {
   StackActions } from 'react-navigation';
 
 import * as actions from '../store/actions';
+import axios from '../shared/axios';
 import AuthCredentials from '../models/auth-credentials.model';
 import authTokenService from '../shared/services/auth-token.service';
 import { AuthState } from '../store/reducers/auth.reducer';
@@ -20,7 +21,7 @@ import { AppState } from '../store/reducers';
 import { LoginForm, SignUpForm } from '../models/forms/auth.form';
 
 interface AuthProps extends AuthState, NavigationScreenProps {
-  authUser: (token: string) => (
+  authUser: (userID: string) => (
     Dispatch<actions.IAuthUserSuccess | actions.IAuthUserFailed>
   );
   login: (credentials: AuthCredentials) => (
@@ -53,8 +54,13 @@ class AuthScreen extends React.Component<AuthProps, AuthStateLocal> {
   public dropdownAlertRef: any;
 
   public componentWillMount(): void {
-    authTokenService.retrieve(token => {
-      if (token) this.props.authUser(token)
+    authTokenService.retrieve(authToken => {
+      if (authToken) {
+        const [userID, token] = authToken.split('-');
+        axios.defaults.headers = { Authorization: 'Bearer ' + token };
+
+        this.props.authUser(userID);
+      }
     });
   }
 
@@ -189,9 +195,9 @@ class AuthScreen extends React.Component<AuthProps, AuthStateLocal> {
 const mapStateToProps = ({ auth }: AppState) => ({ ...auth });
 
 const mapDispatchToProps = (dispatch: Dispatch<actions.AuthAction>) => ({
-  authUser:  (token: string)                => dispatch(actions.authUser(token)),
-  login:     (credentials: AuthCredentials) => dispatch(actions.login(credentials)),
-  signUp:    (credentials: AuthCredentials) => dispatch(actions.signUp(credentials))
+  authUser:  (userID: string) => dispatch(actions.authUser(userID)),
+  login:     (credentials: AuthCredentials)  => dispatch(actions.login(credentials)),
+  signUp:    (credentials: AuthCredentials)  => dispatch(actions.signUp(credentials))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(AuthScreen)
