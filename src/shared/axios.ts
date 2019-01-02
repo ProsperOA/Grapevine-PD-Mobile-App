@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosError, AxiosResponse } from 'axios';
 
 const instance = axios.create({
-  baseURL: 'http://[machine IP address]:5000'
+  baseURL: 'http://136.168.201.106:5001'
 });
 
 instance.interceptors.request.use(
