@@ -1,0 +1,1 @@
+export type ImageResults = {[name: string]: number} | {};
