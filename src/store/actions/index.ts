@@ -13,6 +13,8 @@ export {
   AnalyzeImageAction,
   IAnalyzeImageSuccess,
   IAnalyzeImageFailed,
+  IClearResults,
 
-  analyzeImage
+  analyzeImage,
+  clearResults
 } from './analyze-image.actions';

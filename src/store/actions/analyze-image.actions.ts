@@ -17,10 +17,15 @@ export interface IAnalyzeImageFailed {
   type: types.ANALYZE_IMAGE_FAILED
 }
 
+export interface IClearResults {
+  type: types.CLEAR_RESULTS
+}
+
 export type AnalyzeImageAction =
   | IAnalyzeImageSuccess
   | IAnalyzeImageFailed
-  | IAnalyzeImageStart;
+  | IAnalyzeImageStart
+  | IClearResults;
 
 const analyzeImageStart : ActionCreator<IAnalyzeImageStart> =
  (): IAnalyzeImageStart => ({
@@ -36,6 +41,11 @@ const analyzeImageSuccess: ActionCreator<IAnalyzeImageSuccess> =
 const analyzeImageFailed: ActionCreator<IAnalyzeImageFailed> =
  (): IAnalyzeImageFailed => ({
    type: types.ANALYZE_IMAGE_FAILED
+});
+
+export const clearResults: ActionCreator<IClearResults> =
+ (): IClearResults => ({
+   type: types.CLEAR_RESULTS
 });
 
 export const analyzeImage = (image: any): any =>

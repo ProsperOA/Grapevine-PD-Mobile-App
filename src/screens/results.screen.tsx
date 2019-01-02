@@ -9,15 +9,17 @@ import { NavigationScreenProps } from 'react-navigation';
 import * as actions from '../store/actions';
 import { PRIMARY } from '../shared/styles';
 import { AppState } from '../store/reducers';
+import { ImageResults } from '../models/image-results.model';
 
 interface ResultsScreenProps extends NavigationScreenProps {
   loading: boolean;
   results: any;
   analyzeImage: (image: any) => Dispatch<actions.AnalyzeImageAction>;
+  clearResults: () => Dispatch<actions.IClearResults>;
 }
 
 interface ResultsScreenState {
-  resultsList: any[];
+  resultsList: ImageResults[];
 };
 
 class ResultsScreen extends React.Component<ResultsScreenProps, ResultsScreenState> {
@@ -34,7 +36,7 @@ class ResultsScreen extends React.Component<ResultsScreenProps, ResultsScreenSta
   }
 
   public setResultsState = (results: {[key: string]: number}) => {
-    const newResultsList: any[] = [];
+    const newResultsList: ImageResults[] = [];
 
     Object.keys(results).map((key: string, i: number) => {
       newResultsList.push({
@@ -57,6 +59,11 @@ class ResultsScreen extends React.Component<ResultsScreenProps, ResultsScreenSta
     };
 
     this.props.analyzeImage(image);
+  };
+
+  public onCancel = (): void => {
+    this.props.navigation.navigate('HomeScreen');
+    this.props.clearResults();
   };
 
   public render(): JSX.Element {
@@ -115,7 +122,7 @@ class ResultsScreen extends React.Component<ResultsScreenProps, ResultsScreenSta
                 raised />
               <Button
                 title="Cancel"
-                onPress={() => this.props.navigation.navigate('HomeScreen')}
+                onPress={() => this.onCancel()}
                 raised />
             </View>
           </View>
@@ -129,6 +136,7 @@ const mapStateToProps = ({ analyzeImage }: AppState) => ({ ...analyzeImage });
 
 const mapDispatchToProps = (dispatch: Dispatch<actions.AnalyzeImageAction>) => ({
   analyzeImage: (image: any) => dispatch(actions.analyzeImage(image)),
+  clearResults: () => dispatch(actions.clearResults())
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(ResultsScreen)
