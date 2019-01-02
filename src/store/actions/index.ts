@@ -4,10 +4,15 @@ export {
   IAuthUserFailed,
   ILoginSuccess,
   ILoginFailed,
-  ISignUpSuccess,
-  ISignUpFailed,
 
   authUser,
   login,
-  signUp
 } from './auth.actions';
+
+export {
+  AnalyzeImageAction,
+  IAnalyzeImageSuccess,
+  IAnalyzeImageFailed,
+
+  analyzeImage
+} from './analyze-image.actions';
