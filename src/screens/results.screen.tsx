@@ -62,7 +62,7 @@ class ResultsScreen extends React.Component<ResultsScreenProps, ResultsScreenSta
   };
 
   public onCancel = (): void => {
-    this.props.navigation.navigate('HomeScreen');
+    this.props.navigation.navigate('Camera');
     this.props.clearResults();
   };
 

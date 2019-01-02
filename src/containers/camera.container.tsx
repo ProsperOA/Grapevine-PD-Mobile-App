@@ -1,19 +1,15 @@
 import * as React from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { Icon } from 'react-native-elements';
-import { Camera, ImagePicker, Permissions, PictureResponse } from 'expo';
-
-interface CameraProps {
-  close: any;
-  onTakePicture: (data: PictureResponse) => void;
-}
+import { Camera, PictureResponse } from 'expo';
+import { NavigationActions, NavigationScreenProps } from 'react-navigation';
 
 interface CameraState {
   type: string;
   hasPhotoGalleryPermission: boolean;
 }
 
-export default class extends React.Component<CameraProps, CameraState> {
+export default class extends React.Component<NavigationScreenProps, CameraState> {
   public cameraRef: any;
   public state: Readonly<CameraState> = {
     type: Camera.Constants.Type.back,
@@ -24,24 +20,31 @@ export default class extends React.Component<CameraProps, CameraState> {
     if (!this.cameraRef) return;
 
     this.cameraRef.takePictureAsync({base64: true})
-      .then((options: PictureResponse) => this.props.onTakePicture(options));
+      .then(({ uri, base64 }: PictureResponse) => {
+        const navigateAction = NavigationActions.navigate({
+          routeName: 'ResultsScreen',
+          params: {uri, base64},
+        });
+
+        this.props.navigation.dispatch(navigateAction);
+      });
   };
 
-  public onSelectImage = async (): Promise<void> => {
-    const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
-    this.setState({ hasPhotoGalleryPermission: status === 'granted' });
+  // public onSelectImage = async (): Promise<void> => {
+  //   const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
+  //   this.setState({ hasPhotoGalleryPermission: status === 'granted' });
 
-    if (!this.state.hasPhotoGalleryPermission) return;
+  //   if (!this.state.hasPhotoGalleryPermission) return;
 
-    ImagePicker.launchImageLibraryAsync({
-      allowsEditing: true,
-      aspect: [4, 3],
-      base64: true
-    })
-    .then((result: any) => {
-      if (!result.cancelled) this.props.onTakePicture(result);
-    });
-  };
+  //   ImagePicker.launchImageLibraryAsync({
+  //     allowsEditing: true,
+  //     aspect: [4, 3],
+  //     base64: true
+  //   })
+  //   .then((result: any) => {
+  //     if (!result.cancelled) this.onTakePicture(result);
+  //   });
+  // };
 
   public render(): JSX.Element {
     return (
@@ -50,11 +53,6 @@ export default class extends React.Component<CameraProps, CameraState> {
           ref={(ref: any) => this.cameraRef = ref}
           style={{ flex: 1, padding: 15 }}
           type={this.state.type}>
-          <TouchableOpacity
-            style={{ flex: 1, alignSelf: 'flex-start', marginTop: 25 }}
-            onPress={this.props.close}>
-            <Icon name="close" iconStyle={{ color: '#fff', fontSize: 25 }} />
-          </TouchableOpacity>
           <View
             style={{
               flex: 1,
@@ -80,13 +78,6 @@ export default class extends React.Component<CameraProps, CameraState> {
               <Icon
                 name="camera"
                 iconStyle={{ color: '#fff', fontSize: 50, marginBottom: 10 }} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={{ flex: 0.1, alignSelf: 'flex-end', alignItems: 'center' }}
-              onPress={this.onSelectImage}>
-              <Icon
-                name="photo-library"
-                iconStyle={{ color: '#fff', fontSize: 25, marginBottom: 10 }} />
             </TouchableOpacity>
           </View>
         </Camera>

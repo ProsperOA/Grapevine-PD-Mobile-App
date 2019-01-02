@@ -3,9 +3,8 @@ import { createStore } from 'redux';
 import { Provider } from 'react-redux';
 import { createStackNavigator } from 'react-navigation';
 
-import AuthScreen from './screens/auth.screen';
-import HomeScreen from './screens/home.screen';
 import ResultsScreen from './screens/results.screen';
+import Camera from './containers/camera.container';
 import enhancers from './store/middlewares';
 import rootReducer from './store/reducers';
 
@@ -13,12 +12,11 @@ const store = createStore(rootReducer, enhancers);
 
 const RootNavigator = createStackNavigator(
   {
-    AuthScreen,
-    HomeScreen,
+    Camera,
     ResultsScreen
   },
   {
-    initialRouteName: 'AuthScreen',
+    initialRouteName: 'Camera',
     headerMode: 'none'
   }
 );
